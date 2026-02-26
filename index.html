@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WróżAI">
+<meta name="theme-color" content="#0d1120">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Raleway:wght@300;400;600;700&family=Lora:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<title>WróżAI · Zegar Astrologiczny</title>
+<style>
+:root{--bg:#0d1120;--surface:#111828;--surface2:#161f35;--surface3:#1a2540;--accent:#7ba4d4;--accent2:#5585ba;--gold:#c8a040;--gold2:#e8c060;--teal:#2aa8b8;--muted:#6880a8;--border:#1e2d4a;--border2:#2a3d60;--red:#e05555;--green:#4ade80;--shadow:0 4px 28px rgba(0,0,0,.6);--r:12px;}
+body.light{--bg:#f0f4fb;--surface:#fff;--surface2:#f8faff;--surface3:#eef4ff;--accent:#1e3a5f;--accent2:#2d5a8e;--gold:#9a6f20;--gold2:#c49030;--teal:#1a7a8a;--muted:#6070a0;--border:#dce4f4;--border2:#b0c4dc;--red:#b03030;--shadow:0 4px 28px rgba(30,58,95,.14);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);font-family:'Raleway',sans-serif;color:#c8d8f0;min-height:100vh;padding-bottom:env(safe-area-inset-bottom);}
+body.light{color:#1e3a5f;}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:100;}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:10px 4px 8px;gap:3px;cursor:pointer;color:var(--muted);font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border:none;background:none;transition:color .2s;}
+.nav-btn.active{color:var(--gold);}
+.nav-icon{font-size:20px;line-height:1;}
+.screen{display:none;min-height:calc(100vh - 60px);padding:16px 12px 80px;}
+.screen.active{display:block;}
+.app-title{font-family:'Cinzel',serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:4px;text-transform:uppercase;text-shadow:0 0 30px rgba(200,160,64,.4);}
+.app-subtitle{font-family:'Lora',serif;font-style:italic;color:var(--muted);font-size:12px;margin-top:3px;}
+.accent-bar{width:40px;height:2px;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:1px;margin:8px auto 0;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow);}
+.card-header{background:linear-gradient(135deg,rgba(30,58,95,.8),rgba(45,90,142,.6));border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;}
+.card-title{font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(200,220,255,.85);}
+.card-body{padding:14px 16px;}
+.btn{border:1px solid var(--border2);background:var(--surface2);color:var(--accent);font-family:'Raleway',sans-serif;font-size:11px;font-weight:700;padding:7px 14px;border-radius:6px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn.primary{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+.btn.gold{background:linear-gradient(135deg,#3a2800,#2a1d00);color:var(--gold);border-color:#5a4010;}
+.btn.danger{background:rgba(180,30,30,.15);color:var(--red);border-color:rgba(180,30,30,.3);}
+.btn.sm{padding:5px 10px;font-size:10px;}
+.btn.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.input{width:100%;background:var(--surface3);border:1px solid var(--border2);color:inherit;font-family:'Raleway',sans-serif;font-size:13px;padding:9px 12px;border-radius:6px;outline:none;}
+.input:focus{border-color:var(--accent);}
+body.light .input{color:#1e3a5f;}
+.input-row{display:flex;gap:8px;}
+.input-row .field{flex:1;}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite;}
+.live-dot.paused{background:var(--red);animation:none;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.wheel-wrap{background:radial-gradient(ellipse at center,#131c32,#0a1020);display:flex;justify-content:center;padding:16px;}
+body.light .wheel-wrap{background:radial-gradient(ellipse at center,#eef2fb,#e0e8f8);}
+.wheel-wrap svg{width:100%;max-width:540px;height:auto;}
+.current-time{text-align:center;font-size:12px;font-weight:600;color:var(--accent);padding:8px 0;}
+.step-row{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:6px 0;}
+.picker-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;padding:6px 0;}
+.date-input{background:var(--surface3);border:1px solid var(--border2);color:inherit;font-family:'Raleway',sans-serif;font-size:12px;padding:6px 8px;border-radius:6px;outline:none;}
+body.light .date-input{color:#1e3a5f;}
+.anim-row{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;padding:6px 0 0;}
+.moon-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-top:1px solid var(--border);}
+.moon-info{flex:1;}
+.moon-name{font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+.moon-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;}
+.moon-fill{height:100%;background:linear-gradient(90deg,var(--gold),#ff9900);border-radius:3px;transition:width .5s;}
+.planet-table{width:100%;border-collapse:collapse;}
+.planet-table thead th{padding:8px 10px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);}
+.planet-table tbody tr{border-bottom:1px solid var(--border);}
+.planet-table td{padding:9px 10px;vertical-align:middle;}
+.td-sym{font-size:19px;width:28px;}
+.td-name{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--accent);width:80px;}
+.td-sign{display:flex;align-items:center;gap:5px;}
+.sign-nm{font-family:'Lora',serif;font-style:italic;font-size:13px;color:var(--teal);}
+.retro{color:var(--red);font-size:9px;font-weight:700;background:rgba(180,30,30,.15);padding:2px 5px;border-radius:3px;}
+.deg-pill{display:inline-block;font-size:11px;font-weight:700;background:linear-gradient(135deg,rgba(200,160,64,.2),rgba(200,160,64,.1));color:var(--gold);padding:3px 9px;border-radius:10px;}
+.aspect-legend{display:flex;gap:6px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--border);}
+.asp-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);}
+.asp-line{width:18px;height:2px;border-radius:1px;flex-shrink:0;}
+.profile-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.profile-card.selected{border-color:var(--gold);background:rgba(200,160,64,.08);}
+.profile-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--teal));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.profile-info{flex:1;}
+.profile-name{font-size:14px;font-weight:700;color:var(--accent);}
+.profile-birth{font-size:11px;color:var(--muted);margin-top:2px;}
+.profile-sun{font-size:11px;color:var(--gold);margin-top:2px;}
+.profile-actions{display:flex;gap:6px;}
+.transit-item{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start;}
+.transit-item:last-child{border-bottom:none;}
+.transit-icon{width:36px;height:36px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.transit-icon.conj{background:rgba(100,100,200,.2);color:#aaf;}
+.transit-icon.trine{background:rgba(40,160,80,.2);color:#8ea;}
+.transit-icon.square,.transit-icon.opp{background:rgba(200,50,50,.2);color:#f99;}
+.transit-icon.sext{background:rgba(40,120,200,.2);color:#8bf;}
+.transit-meta{flex:1;}
+.transit-planets{font-size:12px;font-weight:700;color:var(--accent);}
+.transit-aspect{font-size:11px;color:var(--muted);margin-top:2px;}
+.transit-date{font-size:11px;color:var(--gold);margin-top:3px;font-weight:600;}
+.transit-orb{font-size:10px;font-weight:700;background:var(--surface3);border:1px solid var(--border2);color:var(--muted);padding:2px 7px;border-radius:8px;white-space:nowrap;align-self:center;}
+.notif-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 0;}
+.toggle-switch{width:44px;height:24px;border-radius:12px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle-switch.on{background:var(--teal);}
+.toggle-knob{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.4);}
+.toggle-switch.on .toggle-knob{left:22px;}
+.notif-label{font-size:12px;font-weight:600;color:var(--accent);}
+.notif-desc{font-size:10px;color:var(--muted);margin-top:2px;}
+#tip{position:fixed;z-index:9999;display:none;align-items:center;gap:8px;background:rgba(10,18,40,.96);border:1px solid rgba(100,140,220,.3);border-radius:8px;padding:7px 13px;pointer-events:none;white-space:nowrap;}
+.tip-name{font-size:11px;font-weight:700;color:#b8d0ff;letter-spacing:1px;}
+.tip-deg{font-size:13px;font-weight:800;color:var(--gold);}
+#loadingMsg{display:none;position:fixed;inset:0;background:rgba(10,15,30,.93);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#c0d0f0;font-size:14px;letter-spacing:2px;}
+.spinner{width:40px;height:40px;border:3px solid rgba(120,160,220,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,10,25,.85);z-index:200;align-items:flex-end;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px 16px 0 0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:500px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-family:'Cinzel',serif;font-size:16px;font-weight:600;color:var(--gold);margin-bottom:16px;letter-spacing:2px;}
+.modal-actions{display:flex;gap:8px;margin-top:16px;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state .es-icon{font-size:48px;margin-bottom:12px;opacity:.5;}
+.empty-state p{font-size:13px;line-height:1.6;}
+.divider{height:1px;background:var(--border);margin:12px 0;}
+.row{display:flex;gap:8px;align-items:center;}
+.row.between{justify-content:space-between;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fade-in{animation:fadeIn .3s ease both;}
+.install-banner{background:linear-gradient(135deg,rgba(30,58,95,.6),rgba(42,168,184,.2));border:1px solid rgba(42,168,184,.3);border-radius:8px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:12px;}
+.ib-text{flex:1;font-size:11px;color:var(--teal);}
+.ib-title{font-weight:700;font-size:13px;color:var(--accent);margin-bottom:3px;}
+</style>
+</head>
+<body>
+
+<div id="loadingMsg"><div class="spinner"></div><span id="eLoading">Loading Swiss Ephemeris…</span></div>
+<div id="tip"><span id="tipSym" style="font-size:18px"></span><span class="tip-name" id="tipName"></span><span class="tip-deg" id="tipDeg"></span></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">✦ Add Birth Profile</div>
+    <div class="field"><label id="lName">Name</label><input class="input" id="pName" placeholder="Anna"></div>
+    <div class="input-row">
+      <div class="field"><label id="lDate">Birth Date</label><input class="input date-input" type="date" id="pDate"></div>
+      <div class="field"><label id="lTime">Birth Time</label><input class="input date-input" type="time" id="pTime" value="12:00"></div>
+    </div>
+    <div class="field">
+      <label id="lPlace">Birth Place</label>
+      <input class="input" id="pPlace" placeholder="Warsaw, Poland">
+      <div id="lPlaceHint" style="font-size:10px;color:var(--muted);margin-top:4px;">Enter city for house calculation</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="saveProfileBtn" style="flex:1">Save Profile</button>
+      <button class="btn" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" data-screen="sky" onclick="switchScreen('sky')"><span class="nav-icon">◯</span><span id="eNavSky">Sky Now</span></button>
+  <button class="nav-btn" data-screen="profiles" onclick="switchScreen('profiles')"><span class="nav-icon">♦</span><span id="eNavProfiles">Profiles</span></button>
+  <button class="nav-btn" data-screen="transits" onclick="switchScreen('transits')"><span class="nav-icon">⟳</span><span id="eNavTransits">Transits</span></button>
+  <button class="nav-btn" data-screen="settings" onclick="switchScreen('settings')"><span class="nav-icon">⚙</span><span id="eNavSettings">Settings</span></button>
+</nav>
+
+<!-- SKY -->
+<div class="screen active" id="screen-sky">
+  <div style="text-align:center;padding:16px 12px 10px;">
+    <div class="app-title">WróżAI</div>
+    <div class="app-subtitle" id="eSubtitle">Astrological Clock · Swiss Ephemeris</div>
+    <div class="accent-bar"></div>
+  </div>
+  <div id="installBanner" style="display:none" class="install-banner fade-in">
+    <span style="font-size:28px">📲</span>
+    <div class="ib-text"><div class="ib-title" id="eInstallTitle">Install as App</div><span id="eInstallA">Android: ⋮ → Add to Home screen</span><br><span id="eInstallI">iPhone: Share → Add to Home Screen</span></div>
+    <button class="btn sm" onclick="document.getElementById('installBanner').style.display='none'">✕</button>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <span style="font-size:14px;color:rgba(255,255,255,.7)">◯</span>
+      <span class="card-title" id="eWheelTitle">Zodiac Wheel · Current Sky</span>
+      <div style="margin-left:auto" class="live-badge"><span class="live-dot" id="liveDot"></span><span id="liveLabel">LIVE</span></div>
+    </div>
+    <div class="wheel-wrap"><svg id="sky-wheel" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <div class="moon-bar">
+      <span style="font-size:28px;flex-shrink:0" id="moonEmoji">🌑</span>
+      <div class="moon-info"><div class="moon-name" id="moonName">—</div><div class="moon-track"><div class="moon-fill" id="moonFill" style="width:0%"></div></div></div>
+      <span style="font-size:14px;font-weight:700;color:var(--gold2)" id="moonPct">—</span>
+    </div>
+    <div class="aspect-legend" id="aspectLegend"></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span class="card-title" id="eTimeNav">⏱ Time Navigation</span><span id="modeBadge" style="margin-left:auto;font-size:9px;background:rgba(200,160,64,.15);color:var(--gold);border:1px solid rgba(200,160,64,.3);padding:2px 8px;border-radius:8px;display:none">HISTORICAL MODE</span></div>
+    <div class="card-body">
+      <div class="current-time" id="currentDate">—</div>
+      <div class="step-row">
+        <button class="btn sm" data-step="-1" data-unit="week">◀ <span class="tWeek">Week</span></button>
+        <button class="btn sm" data-step="-1" data-unit="day">◀ <span class="tDay">Day</span></button>
+        <button class="btn sm" data-step="-1" data-unit="hour">◀ <span class="tHr">Hr</span></button>
+        <button class="btn sm" data-step="1" data-unit="hour"><span class="tHr">Hr</span> ▶</button>
+        <button class="btn sm" data-step="1" data-unit="day"><span class="tDay">Day</span> ▶</button>
+        <button class="btn sm" data-step="1" data-unit="week"><span class="tWeek">Week</span> ▶</button>
+      </div>
+      <div class="picker-row">
+        <input type="date" class="date-input" id="datePicker">
+        <input type="time" class="date-input" id="timePicker" value="12:00" style="width:86px">
+        <button class="btn primary sm" id="jumpBtn">Jump ↵</button>
+        <button class="btn danger sm" id="nowBtn">⟳ Now</button>
+      </div>
+      <div class="anim-row">
+        <span style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase" id="eAnimLabel">Animation:</span>
+        <button class="btn sm" id="animBtn">▶ Play</button>
+        <button class="btn sm" data-animspeed="1">1d/s</button>
+        <button class="btn sm active" data-animspeed="7">1w/s</button>
+        <button class="btn sm" data-animspeed="30">1m/s</button>
+        <button class="btn sm" data-animspeed="-7">◀ Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><span style="font-size:14px;color:rgba(255,255,255,.7)">♃</span><span class="card-title" id="ePlanetPos">Planet Positions</span></div>
+    <table class="planet-table">
+      <thead><tr><th></th><th id="thPlanet">Planet</th><th id="thSign">Sign</th><th></th><th style="text-align:right" id="thDeg">Degrees</th></tr></thead>
+      <tbody id="sky-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PROFILES -->
+<div class="screen" id="screen-profiles">
+  <div style="padding:16px 0 8px;display:flex;align-items:center;justify-content:space-between;">
+    <div><div class="app-title" style="font-size:16px;letter-spacing:3px" id="eProfilesTitle">Profiles</div><div class="app-subtitle" id="eProfilesSub">Birth charts & natal data</div></div>
+    <button class="btn gold" onclick="openAddProfile()" id="eAddBtn">+ Add Profile</button>
+  </div>
+  <div id="profilesList"></div>
+  <div id="natalSection" style="display:none">
+    <div class="card">
+      <div class="card-header"><span style="font-size:14px;color:rgba(255,255,255,.7)">☽</span><span class="card-title" id="natalTitle">Kosmogram</span></div>
+      <div id="natalHouseInfo" style="padding:8px 16px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border)"></div>
+      <div class="wheel-wrap"><svg id="natal-wheel" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <div class="card-body">
+        <div id="natalAngles" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+        <table class="planet-table">
+          <thead><tr><th></th><th id="nThPlanet">Planet</th><th id="nThSign">Sign</th><th id="nThHouse">House</th><th></th><th style="text-align:right" id="nThDeg">Degrees</th></tr></thead>
+          <tbody id="natal-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSITS -->
+<div class="screen" id="screen-transits">
+  <div style="padding:16px 0 12px"><div class="app-title" style="font-size:16px;letter-spacing:3px" id="eTransitsTitle">Transits</div><div class="app-subtitle" id="eTransitsSub">Upcoming planetary aspects to natal positions</div></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-body" style="padding:10px 14px">
+      <div class="row between">
+        <div><div style="font-size:11px;font-weight:700;color:var(--accent)" id="eTProfileLabel">Profile</div><div style="font-size:10px;color:var(--muted);margin-top:2px" id="eTProfileDesc">Select whose transits to show</div></div>
+        <select class="date-input" id="transitProfileSelect" style="max-width:160px"><option value="" id="eTSelectOpt">— Select Profile —</option></select>
+      </div>
+      <div class="divider"></div>
+      <div class="row between">
+        <div><div style="font-size:11px;font-weight:700;color:var(--accent)" id="eLookAhead">Look ahead</div><div style="font-size:10px;color:var(--muted);margin-top:2px" id="eWindow">Search window</div></div>
+        <select class="date-input" id="transitDays" style="max-width:120px">
+          <option value="30">30 days</option><option value="60">60 days</option><option value="90" selected>90 days</option><option value="180">180 days</option><option value="365">1 year</option>
+        </select>
+      </div>
+      <div class="divider"></div>
+      <button class="btn primary" style="width:100%" id="calcTransitsBtn">Calculate Transits</button>
+    </div>
+  </div>
+  <div id="transitResults"><div class="empty-state"><div class="es-icon">⟳</div><p id="eTransitEmpty">Select a birth profile and calculate to see upcoming transits.</p></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="screen" id="screen-settings">
+  <div style="padding:16px 0 12px"><div class="app-title" style="font-size:16px;letter-spacing:3px" id="eSettingsTitle">Settings</div><div class="app-subtitle" id="eSettingsSub">Preferences & notifications</div></div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">🌐 <span id="eLangTitle">Language</span></span></div>
+    <div class="card-body"><div style="display:flex;gap:8px">
+      <button class="btn active" id="langEN" onclick="setLang('en')" style="flex:1">🇬🇧 English</button>
+      <button class="btn" id="langPL" onclick="setLang('pl')" style="flex:1">🇵🇱 Polski</button>
+    </div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">🔔 <span id="eNotifTitle">Push Notifications</span></span></div>
+    <div class="card-body">
+      <div class="notif-toggle">
+        <div><div class="notif-label" id="eTransitAlerts">Transit Alerts</div><div class="notif-desc" id="eTransitAlertsDesc">Notify me of major upcoming transits</div></div>
+        <div class="toggle-switch" id="notifToggle" onclick="toggleNotifications()"><div class="toggle-knob"></div></div>
+      </div>
+      <div id="notifStatus" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
+      <div class="divider"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px" id="eAlertTiming">Alert timing</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="alertTiming">
+        <button class="btn sm active" data-days="1" id="eDay1">1 day before</button>
+        <button class="btn sm" data-days="3" id="eDay3">3 days before</button>
+        <button class="btn sm" data-days="7" id="eWeek1">1 week before</button>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px" id="eNotifyFor">Notify for aspects</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="alertAspects">
+        <button class="btn sm active" data-asp="conj" id="eSConj">Conjunction</button>
+        <button class="btn sm active" data-asp="opp" id="eSOppp">Opposition</button>
+        <button class="btn sm active" data-asp="trine" id="eSTrine">Trine</button>
+        <button class="btn sm active" data-asp="square" id="eSSquare">Square</button>
+        <button class="btn sm" data-asp="sext" id="eSSext">Sextile</button>
+      </div>
+      <div class="divider"></div>
+      <button class="btn primary" style="width:100%" id="scheduleNotifBtn" onclick="scheduleNotifications()">Schedule Notifications</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">⌂ <span id="eHouseSystemTitle">House System</span></span></div>
+    <div class="card-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px" id="eHouseSystemDesc">Astrological house system for natal charts</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn active" id="housePorphyry" onclick="setHouseSystem('O')" style="flex:1">Porphyry</button>
+        <button class="btn" id="housePlacidus" onclick="setHouseSystem('P')" style="flex:1">Placidus</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">🎨 <span id="eAppearance">Appearance</span></span></div>
+    <div class="card-body">
+      <div class="notif-toggle">
+        <div><div class="notif-label" id="eLightMode">Light Mode</div><div class="notif-desc" id="eLightDesc">Switch between dark and light theme</div></div>
+        <div class="toggle-switch" id="themeToggle" onclick="toggleTheme()"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">⚙ <span id="eOrbTitle">Transit Orbs</span></span></div>
+    <div class="card-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px" id="eOrbDesc">Orb (degrees of tolerance) used when detecting transits</div>
+      <div class="input-row">
+        <div class="field"><label id="eOrbMajor">Major aspects (°)</label><input class="input" type="number" id="orbMajor" value="3" min="1" max="10"></div>
+        <div class="field"><label id="eOrbMinor">Minor aspects (°)</label><input class="input" type="number" id="orbMinor" value="1" min="1" max="5"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">ℹ About WróżAI</span></div>
+    <div class="card-body"><div style="font-size:12px;color:var(--muted);line-height:1.7"><strong style="color:var(--accent)">WróżAI</strong> <span id="eAboutText">uses Swiss Ephemeris (Astrodienst AG) for sub-arcminute planetary calculations. All data is computed locally on your device. Tropical zodiac · Placidus houses.</span></div></div>
+  </div>
+</div>
+
+<script type="module">
+import SwissEph from 'https://cdn.jsdelivr.net/gh/prolaxu/swisseph-wasm@main/src/swisseph.js';
+
+// ─── UTILS ────────────────────────────────────────────────────────
+const DEG = Math.PI / 180;
+const norm = d => ((d % 360) + 360) % 360;
+
+// ─── I18N ─────────────────────────────────────────────────────────
+const TR = {
+  en: {
+    loading:'Loading Swiss Ephemeris…', addProfile:'Add Birth Profile', editProfile:'Edit Profile',
+    name:'Name', birthDate:'Birth Date', birthTime:'Birth Time', birthPlace:'Birth Place',
+    birthPlaceHint:'Enter city for house calculation', saveProfile:'Save Profile', cancel:'Cancel',
+    navSky:'Sky Now', navProfiles:'Profiles', navTransits:'Transits', navSettings:'Settings',
+    subtitle:'Astrological Clock · Swiss Ephemeris', installTitle:'Install as App',
+    installA:'Android: ⋮ → Add to Home screen', installI:'iPhone: Share → Add to Home Screen',
+    wheelTitle:'Zodiac Wheel · Current Sky', live:'LIVE', historical:'HISTORICAL',
+    timeNav:'⏱ Time Navigation', histMode:'HISTORICAL MODE',
+    week:'Week', day:'Day', hr:'Hr', jump:'Jump ↵', now:'⟳ Now', anim:'Animation:', play:'▶ Play', pause:'⏸ Pause',
+    planetPos:'Planet Positions', planet:'Planet', sign:'Sign', degrees:'Degrees', house:'House',
+    profilesTitle:'Profiles', profilesSub:'Birth charts & natal data', addBtn:'+ Add Profile',
+    noProfiles:'No birth profiles yet.\nAdd your first profile to track personal transits.',
+    natalChart:'Natal Chart', transitsTitle:'Transits',
+    transitsSub:'Upcoming planetary aspects to natal positions',
+    tProfile:'Profile', tProfileDesc:'Select whose transits to show', tSelectOpt:'— Select Profile —',
+    lookAhead:'Look ahead', window:'Search window', calcTransits:'Calculate Transits',
+    transitEmpty:'Select a birth profile and calculate to see upcoming transits.',
+    settingsTitle:'Settings', settingsSub:'Preferences & notifications', langTitle:'Language',
+    notifTitle:'Push Notifications', transitAlerts:'Transit Alerts',
+    transitAlertsDesc:'Notify me of major upcoming transits', alertTiming:'Alert timing',
+    day1:'1 day before', day3:'3 days before', week1:'1 week before', notifyFor:'Notify for aspects',
+    conj:'Conjunction', opp:'Opposition', trine:'Trine', square:'Square', sext:'Sextile',
+    scheduleNotif:'Schedule Notifications', appearance:'Appearance', lightMode:'Light Mode',
+    lightDesc:'Switch between dark and light theme', orbTitle:'Transit Orbs',
+    orbDesc:'Orb (degrees of tolerance) used when detecting transits',
+    orbMajor:'Major aspects (°)', orbMinor:'Minor aspects (°)',
+    aboutText:'uses Swiss Ephemeris (Astrodienst AG) for sub-arcminute planetary calculations. All data is computed locally on your device. Tropical zodiac · Placidus houses.',
+    geocodeErr:'City not found — chart shown without houses.',
+    asc:'ASC', mc:'MC', foundFor:'transits found for', today:'Today', dAgo:'d ago',
+    delConfirm:'Delete this profile?', needNotif:'Enable notifications first.',
+    needProfile:'Add a birth profile first.', needSelect:'Select a profile first.',
+    needNameDate:'Please enter a name and birth date.', calculating:'Calculating…',
+    notifOn:'✓ Notifications enabled', notifOff:'Notifications disabled.',
+    kosmogram:'Kosmogram', houseSystemTitle:'House System',
+    houseSystemDesc:'Astrological house system for natal charts',
+    porphyry:'Porphyry', placidus:'Placidus',
+    notifDenied:'Permission denied — enable in browser settings.', notifNo:'Notifications not supported.',
+  },
+  pl: {
+    loading:'Ładowanie Swiss Ephemeris…', addProfile:'Dodaj profil urodzin', editProfile:'Edytuj profil',
+    name:'Imię', birthDate:'Data urodzin', birthTime:'Godzina urodzin', birthPlace:'Miejsce urodzin',
+    birthPlaceHint:'Podaj miasto dla obliczenia domów', saveProfile:'Zapisz profil', cancel:'Anuluj',
+    navSky:'Niebo Teraz', navProfiles:'Profile', navTransits:'Tranzyty', navSettings:'Ustawienia',
+    subtitle:'Zegar Astrologiczny · Swiss Ephemeris', installTitle:'Zainstaluj aplikację',
+    installA:'Android: ⋮ → Dodaj do ekranu głównego', installI:'iPhone: Udostępnij → Dodaj do ekranu głównego',
+    wheelTitle:'Koło Zodiaku · Niebo Teraz', live:'NA ŻYWO', historical:'HISTORYCZNY',
+    timeNav:'⏱ Nawigacja Czasowa', histMode:'TRYB HISTORYCZNY',
+    week:'Tydz.', day:'Dzień', hr:'Godz.', jump:'Skocz ↵', now:'⟳ Teraz', anim:'Animacja:', play:'▶ Odtwórz', pause:'⏸ Pauza',
+    planetPos:'Pozycje Planet', planet:'Planeta', sign:'Znak', degrees:'Stopnie', house:'Dom',
+    profilesTitle:'Profile', profilesSub:'Horoskopy urodzin i dane natalne', addBtn:'+ Dodaj profil',
+    noProfiles:'Brak profili urodzin.\nDodaj profil, aby śledzić osobiste tranzyty.',
+    natalChart:'Mapa urodzin', transitsTitle:'Tranzyty',
+    transitsSub:'Nadchodzące aspekty planet do pozycji natalnych',
+    tProfile:'Profil', tProfileDesc:'Wybierz czyje tranzyty pokazać', tSelectOpt:'— Wybierz profil —',
+    lookAhead:'Szukaj do przodu', window:'Okno wyszukiwania', calcTransits:'Oblicz Tranzyty',
+    transitEmpty:'Wybierz profil i oblicz, aby zobaczyć nadchodzące tranzyty.',
+    settingsTitle:'Ustawienia', settingsSub:'Preferencje i powiadomienia', langTitle:'Język',
+    notifTitle:'Powiadomienia Push', transitAlerts:'Alerty Tranzytów',
+    transitAlertsDesc:'Powiadamiaj mnie o ważnych tranzytach', alertTiming:'Czas alertu',
+    day1:'1 dzień wcześniej', day3:'3 dni wcześniej', week1:'1 tydzień wcześniej', notifyFor:'Powiadamiaj dla aspektów',
+    conj:'Koniunkcja', opp:'Opozycja', trine:'Trygon', square:'Kwadratura', sext:'Sekstyl',
+    scheduleNotif:'Zaplanuj Powiadomienia', appearance:'Wygląd', lightMode:'Tryb Jasny',
+    lightDesc:'Przełącz tryb jasny/ciemny', orbTitle:'Orby Tranzytów',
+    orbDesc:'Orb (tolerancja w stopniach) przy wykrywaniu tranzytów',
+    orbMajor:'Aspekty główne (°)', orbMinor:'Aspekty mniejsze (°)',
+    aboutText:'używa silnika Swiss Ephemeris (Astrodienst AG). Wszystkie obliczenia wykonywane lokalnie. Zodiak tropikalny · Domy Placidusa.',
+    geocodeErr:'Nie znaleziono miasta — mapa bez domów.',
+    asc:'ASC', mc:'MC', foundFor:'tranzytów znaleziono dla', today:'Dziś', dAgo:'d temu',
+    delConfirm:'Usunąć ten profil?', needNotif:'Najpierw włącz powiadomienia.',
+    needProfile:'Najpierw dodaj profil.', needSelect:'Najpierw wybierz profil.',
+    needNameDate:'Podaj imię i datę urodzin.', calculating:'Obliczam…',
+    notifOn:'✓ Powiadomienia włączone', notifOff:'Powiadomienia wyłączone.',
+    kosmogram:'Kosmogram', houseSystemTitle:'System Domów',
+    houseSystemDesc:'Astrologiczny system domów dla mapy urodzin',
+    porphyry:'Porphyry', placidus:'Placidus',
+    notifDenied:'Odmowa — włącz w ustawieniach przeglądarki.', notifNo:'Powiadomienia nieobsługiwane.',
+  }
+};
+let lang = 'en';
+const t = k => TR[lang][k] || TR.en[k] || k;
+
+// map of element id -> translation key
+const ELMAP = {
+  eLoading:'loading', eNavSky:'navSky', eNavProfiles:'navProfiles', eNavTransits:'navTransits',
+  eNavSettings:'navSettings', eSubtitle:'subtitle', eInstallTitle:'installTitle',
+  eInstallA:'installA', eInstallI:'installI', eWheelTitle:'wheelTitle',
+  eTimeNav:'timeNav', modeBadge:'histMode', ePlanetPos:'planetPos',
+  thPlanet:'planet', thSign:'sign', thDeg:'degrees',
+  eProfilesTitle:'profilesTitle', eProfilesSub:'profilesSub', eAddBtn:'addBtn',
+  natalTitle:'kosmogram', nThPlanet:'planet', nThSign:'sign', nThHouse:'house', nThDeg:'degrees',
+  eTransitsTitle:'transitsTitle', eTransitsSub:'transitsSub', eTProfileLabel:'tProfile',
+  eTProfileDesc:'tProfileDesc', eTSelectOpt:'tSelectOpt', eLookAhead:'lookAhead',
+  eWindow:'window', calcTransitsBtn:'calcTransits', eTransitEmpty:'transitEmpty',
+  eSettingsTitle:'settingsTitle', eSettingsSub:'settingsSub', eLangTitle:'langTitle',
+  eNotifTitle:'notifTitle', eTransitAlerts:'transitAlerts', eTransitAlertsDesc:'transitAlertsDesc',
+  eAlertTiming:'alertTiming', eDay1:'day1', eDay3:'day3', eWeek1:'week1',
+  eNotifyFor:'notifyFor', eSConj:'conj', eSOppp:'opp', eSTrine:'trine', eSSquare:'square', eSSext:'sext',
+  scheduleNotifBtn:'scheduleNotif', eAppearance:'appearance', eLightMode:'lightMode',
+  eLightDesc:'lightDesc', eOrbTitle:'orbTitle', eOrbDesc:'orbDesc',
+  eOrbMajor:'orbMajor', eOrbMinor:'orbMinor', eAboutText:'aboutText',
+  lName:'name', lDate:'birthDate', lTime:'birthTime', lPlace:'birthPlace', lPlaceHint:'birthPlaceHint',
+  eAnimLabel:'anim',
+};
+
+function applyLang() {
+  Object.entries(ELMAP).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = t(key);
+  });
+  document.querySelectorAll('.tWeek').forEach(e => e.textContent = t('week'));
+  document.querySelectorAll('.tDay').forEach(e => e.textContent = t('day'));
+  document.querySelectorAll('.tHr').forEach(e => e.textContent = t('hr'));
+  const ll = document.getElementById('liveLabel');
+  if (ll) ll.textContent = isLive ? t('live') : t('historical');
+  const ab = document.getElementById('animBtn');
+  if (ab) ab.textContent = isAnimating ? t('pause') : t('play');
+  document.getElementById('langEN').classList.toggle('active', lang === 'en');
+  document.getElementById('langPL').classList.toggle('active', lang === 'pl');
+}
+
+window.setLang = function(l) {
+  lang = l;
+  localStorage.setItem('wrozai_lang', l);
+  applyLang();
+  render(currentDate);
+  if (selectedProfileId) showNatalChart(selectedProfileId);
+};
+
+window.setHouseSystem = function(sys) {
+  houseSystem = sys;
+  localStorage.setItem('wrozai_houses', sys);
+  document.getElementById('housePorphyry').classList.toggle('active', sys === 'O');
+  document.getElementById('housePlacidus').classList.toggle('active', sys === 'P');
+  if (selectedProfileId) showNatalChart(selectedProfileId);
+};
+
+// ─── ASTRO DATA ───────────────────────────────────────────────────
+const SIGN_EN = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const SIGN_PL = ['Baran','Byk','Bliźnięta','Rak','Lew','Panna','Waga','Skorpion','Strzelec','Koziorożec','Wodnik','Ryby'];
+const SIGN_SYM = ['♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓'];
+const SIGN_COL = ['#c0392b','#27ae60','#c8961a','#2980b9','#d35400','#16a085','#8e44ad','#922b21','#ca6f1e','#566573','#1a5276','#6c3483'];
+function signOf(lon) {
+  const n = norm(lon), i = Math.floor(n / 30), d = n % 30, dg = Math.floor(d), mn = Math.floor((d - dg) * 60);
+  return { name: (lang === 'pl' ? SIGN_PL : SIGN_EN)[i], sym: SIGN_SYM[i], col: SIGN_COL[i], deg: dg, min: mn };
+}
+
+const PLANET_EN = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','N.Node','S.Node'];
+const PLANET_PL = ['Słońce','Księżyc','Merkury','Wenus','Mars','Jowisz','Saturn','Uran','Neptun','Pluton','Węzeł Pn.','Węzeł Pd.'];
+const PLANET_SYM = ['☉','☽','☿','♀','♂','♃','♄','⛢','♆','♇','☊','☋'];
+const PLANET_COL = ['#c47c0a','#2471a3','#707b8a','#1e8449','#c0392b','#9a6b00','#7d6608','#0e7490','#1a3a7e','#6d4c41','#9b7200','#9b7200'];
+const SWE_IDS = [0,1,2,3,4,5,6,7,8,9,11,11];
+const IS_NODE = [false,false,false,false,false,false,false,false,false,false,true,true];
+const IS_SOUTH = [false,false,false,false,false,false,false,false,false,false,false,true];
+const pname = i => (lang === 'pl' ? PLANET_PL : PLANET_EN)[i];
+
+const MOON_EN = ['New Moon','Waxing Crescent','First Quarter','Waxing Gibbous','Full Moon','Waning Gibbous','Last Quarter','Waning Crescent'];
+const MOON_PL = ['Nów','Przybywający Sierp','Pierwsza Kwadra','Przybywający Garb','Pełnia','Ubywający Garb','Ostatnia Kwadra','Ubywający Sierp'];
+const MOON_EM = ['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'];
+
+const ASPECTS = [
+  { key:'conj',  enN:'Conjunction', plN:'Koniunkcja', angle:0,   orb:8, major:true,  col:'rgba(100,100,200,.55)', dash:'',    w:1.5, cls:'conj',  sym:'☌' },
+  { key:'opp',   enN:'Opposition',  plN:'Opozycja',   angle:180, orb:8, major:true,  col:'rgba(180,40,40,.55)',   dash:'',    w:1.5, cls:'opp',   sym:'☍' },
+  { key:'trine', enN:'Trine',       plN:'Trygon',     angle:120, orb:7, major:true,  col:'rgba(40,160,80,.55)',   dash:'',    w:1.4, cls:'trine', sym:'△' },
+  { key:'square',enN:'Square',      plN:'Kwadratura', angle:90,  orb:7, major:true,  col:'rgba(200,50,50,.50)',   dash:'5,3', w:1.3, cls:'square',sym:'□' },
+  { key:'sext',  enN:'Sextile',     plN:'Sekstyl',    angle:60,  orb:5, major:false, col:'rgba(40,120,200,.50)',  dash:'3,2', w:1.2, cls:'sext',  sym:'⚹' },
+  { key:'semi',  enN:'Semisquare',  plN:'Półkwadrat', angle:45,  orb:2, major:false, col:'rgba(180,100,40,.40)', dash:'2,3', w:0.9, cls:'sext',  sym:'∠' },
+  { key:'quinc', enN:'Quincunx',    plN:'Kwinkuńks',  angle:150, orb:2, major:false, col:'rgba(160,40,160,.40)', dash:'4,3', w:0.9, cls:'sext',  sym:'⚻' },
+];
+const aspName = a => lang === 'pl' ? a.plN : a.enN;
+
+// ─── SWISS EPHEMERIS ──────────────────────────────────────────────
+let swe = null;
+async function initSwe() {
+  const s = new SwissEph();
+  await s.initSwissEph();
+  swe = s;
+}
+
+function julday(d) {
+  return swe.julday(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(),
+    d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600);
+}
+
+function calcPlanets(dateObj) {
+  if (!swe) return Array(12).fill(null);
+  const jd = julday(dateObj);
+  const FLAG = (swe.SEFLG_SWIEPH || 2) | (swe.SEFLG_SPEED || 256);
+  return SWE_IDS.map((id, i) => {
+    try {
+      const r = swe.calc_ut(jd, id, FLAG);
+      let lon = norm(r[0]);
+      if (IS_SOUTH[i]) lon = norm(lon + 180);
+      return { lon, retro: IS_SOUTH[i] ? true : r[3] < 0 };
+    } catch(e) { return null; }
+  });
+}
+
+let houseSystem = 'O'; // O=Porphyry (default), P=Placidus
+
+function calcHouses(jd, lat, lon) {
+  if (!swe) return null;
+  const tryOrder = [houseSystem, 'O', 'P', 'W'];
+  for (const sys of tryOrder) {
+    try {
+      const res = swe.houses_ex(jd, 0, lat, lon, sys);
+      if (!res || !res[0] || !res[1]) continue;
+      return {
+        cusps: Array.from({ length: 12 }, (_, i) => norm(res[0][i + 1])),
+        asc: norm(res[1][0]), mc: norm(res[1][1]),
+        dc: norm(res[1][0] + 180), ic: norm(res[1][1] + 180),
+        sys
+      };
+    } catch(e) { console.warn('House calc failed for system', sys, e.message); continue; }
+  }
+  return null;
+}
+
+function whichHouse(lon, cusps) {
+  for (let h = 0; h < 12; h++) {
+    const s = cusps[h], e = cusps[(h + 1) % 12];
+    if (s <= e) { if (lon >= s && lon < e) return h + 1; }
+    else { if (lon >= s || lon < e) return h + 1; }
+  }
+  return 1;
+}
+
+function moonPhase(planets) {
+  const sl = planets[0]?.lon, ml = planets[1]?.lon;
+  if (sl == null || ml == null) return null;
+  const a = norm(ml - sl), i = Math.floor(a / 45);
+  return { name: (lang === 'pl' ? MOON_PL : MOON_EN)[i], emoji: MOON_EM[i], illum: Math.round((1 - Math.cos(a * DEG)) / 2 * 100) };
+}
+
+function calcAspects(planets) {
+  const out = [];
+  for (let i = 0; i < planets.length; i++) {
+    if (!planets[i] || IS_NODE[i]) continue;
+    for (let j = i + 1; j < planets.length; j++) {
+      if (!planets[j] || IS_NODE[j]) continue;
+      let d = Math.abs(planets[i].lon - planets[j].lon);
+      if (d > 180) d = 360 - d;
+      for (const asp of ASPECTS) {
+        if (Math.abs(d - asp.angle) <= asp.orb) { out.push({ p1: i, p2: j, asp }); break; }
+      }
+    }
+  }
+  return out;
+}
+
+async function geocode(city) {
+  // Try Open-Meteo geocoding API first (no auth needed, CORS-friendly)
+  try {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=en&format=json`);
+    const d = await r.json();
+    if (d && d.results && d.results.length) {
+      const g = d.results[0];
+      return { lat: g.latitude, lon: g.longitude, name: g.name + (g.country ? ', ' + g.country : '') };
+    }
+  } catch(e) {}
+  // Fallback: Nominatim with User-Agent
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1&accept-language=en`, {
+      headers: { 'User-Agent': 'WrozAI-PWA/1.0', 'Accept-Language': 'en' }
+    });
+    const d = await r.json();
+    if (d && d.length) return { lat: +d[0].lat, lon: +d[0].lon, name: d[0].display_name };
+  } catch(e) {}
+  console.warn('Geocoding failed for:', city);
+  return null;
+}
+
+// ─── SVG HELPERS ──────────────────────────────────────────────────
+function mkSvg(ns) {
+  return (tag, attrs, txt) => {
+    const e = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+    if (txt !== undefined) e.textContent = txt;
+    return e;
+  };
+}
+
+function attachTip(hit, dot, svgEl, px, py, symTxt, symCol, nameStr, degStr) {
+  const showTip = touch => {
+    const tip = document.getElementById('tip');
+    document.getElementById('tipSym').textContent = symTxt;
+    document.getElementById('tipSym').style.color = symCol;
+    document.getElementById('tipName').textContent = nameStr;
+    document.getElementById('tipDeg').textContent = degStr;
+    tip.style.display = 'flex';
+    const rect = svgEl.getBoundingClientRect();
+    const sx = rect.width / 520, sy = rect.height / 520;
+    tip.style.left = (rect.left + px * sx) + 'px';
+    tip.style.top = (py > 260 ? rect.top + py * sy - 46 : rect.top + py * sy + 16) + 'px';
+    tip.style.transform = 'translateX(-50%)';
+    if (touch) setTimeout(() => tip.style.display = 'none', 2500);
+  };
+  hit.addEventListener('mouseenter', () => showTip(false));
+  hit.addEventListener('mouseleave', () => document.getElementById('tip').style.display = 'none');
+  hit.addEventListener('touchstart', e => { e.preventDefault(); showTip(true); });
+}
+
+// ─── DRAW SKY WHEEL ───────────────────────────────────────────────
+function drawSkyWheel(planets) {
+  const svg = document.getElementById('sky-wheel');
+  if (!svg) return;
+  svg.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+  const mk = mkSvg(ns);
+  const cx = 260, cy = 260, rO = 244, rB = 208, rI = 172;
+  const dark = !document.body.classList.contains('light');
+
+  // background
+  const defs = mk('defs', {});
+  const gr = mk('radialGradient', { id: 'skybg', cx: '50%', cy: '50%', r: '50%' });
+  gr.appendChild(mk('stop', { offset: '0%', 'stop-color': dark ? '#131c32' : '#eef2fb' }));
+  gr.appendChild(mk('stop', { offset: '100%', 'stop-color': dark ? '#0a1020' : '#dde4f5' }));
+  defs.appendChild(gr); svg.appendChild(defs);
+  svg.appendChild(mk('circle', { cx, cy, r: rO, fill: 'url(#skybg)', stroke: dark ? '#1e2d4a' : '#b0bcd8', 'stroke-width': '1.5' }));
+
+  // sign sectors (Aries at left = 180° in SVG)
+  for (let i = 0; i < 12; i++) {
+    const a1 = (180 - i * 30) * DEG, a2 = (180 - (i + 1) * 30) * DEG;
+    const x1 = cx + rB * Math.cos(a1), y1 = cy + rB * Math.sin(a1);
+    const x2 = cx + rO * Math.cos(a1), y2 = cy + rO * Math.sin(a1);
+    const x3 = cx + rO * Math.cos(a2), y3 = cy + rO * Math.sin(a2);
+    const x4 = cx + rB * Math.cos(a2), y4 = cy + rB * Math.sin(a2);
+    svg.appendChild(mk('path', { d: `M${x1} ${y1}L${x2} ${y2}A${rO} ${rO} 0 0 1 ${x3} ${y3}L${x4} ${y4}A${rB} ${rB} 0 0 0 ${x1} ${y1}`, fill: SIGN_COL[i] + '22', stroke: dark ? '#1e2d4a' : '#b8c4dc', 'stroke-width': '0.5' }));
+    const ma = (180 - (i + 0.5) * 30) * DEG, rs = (rB + rO) / 2;
+    svg.appendChild(mk('text', { x: cx + rs * Math.cos(ma), y: cy + rs * Math.sin(ma), 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: SIGN_COL[i], 'font-size': '18', 'font-family': 'serif', 'font-weight': 'bold' }, SIGN_SYM[i]));
+  }
+  svg.appendChild(mk('circle', { cx, cy, r: rB, fill: 'none', stroke: dark ? '#1e2d4a' : '#a8b8d8', 'stroke-width': '1.2' }));
+  svg.appendChild(mk('circle', { cx, cy, r: rI, fill: dark ? '#0d1626' : '#f8faff', stroke: dark ? '#182436' : '#b8c8e0', 'stroke-width': '1' }));
+
+  // ticks
+  for (let i = 0; i < 360; i += 5) {
+    const a = (180 - i) * DEG, r1 = i % 30 === 0 ? rI - 14 : i % 10 === 0 ? rI - 8 : rI - 4;
+    svg.appendChild(mk('line', { x1: cx + rI * Math.cos(a), y1: cy + rI * Math.sin(a), x2: cx + r1 * Math.cos(a), y2: cy + r1 * Math.sin(a), stroke: i % 30 === 0 ? (dark ? '#4060a0' : '#6070a0') : (dark ? '#1e2d4a' : '#b0bcd8'), 'stroke-width': i % 30 === 0 ? '1.4' : '0.6' }));
+  }
+  // sign dividers — FIXED (both endpoints use correct sin/cos)
+  for (let i = 0; i < 12; i++) {
+    const a = (180 - i * 30) * DEG;
+    svg.appendChild(mk('line', { x1: cx + rI * Math.cos(a), y1: cy + rI * Math.sin(a), x2: cx + rB * Math.cos(a), y2: cy + rB * Math.sin(a), stroke: dark ? '#2a3d60' : '#8898c0', 'stroke-width': '0.9' }));
+  }
+
+  // aspect lines
+  const rAsp = rI - 4;
+  calcAspects(planets).forEach(({ p1, p2, asp }) => {
+    if (!planets[p1] || !planets[p2]) return;
+    const a1 = (180 - planets[p1].lon) * DEG, a2 = (180 - planets[p2].lon) * DEG;
+    const ln = mk('line', { x1: cx + rAsp * Math.cos(a1), y1: cy + rAsp * Math.sin(a1), x2: cx + rAsp * Math.cos(a2), y2: cy + rAsp * Math.sin(a2), stroke: asp.col, 'stroke-width': String(asp.w) });
+    if (asp.dash) ln.setAttribute('stroke-dasharray', asp.dash);
+    svg.appendChild(ln);
+  });
+
+  // moon center
+  const ph = moonPhase(planets);
+  svg.appendChild(mk('circle', { cx, cy, r: 30, fill: dark ? '#0d1626' : '#e8eef8', stroke: dark ? '#1e2d4a' : '#c0cce0', 'stroke-width': '1' }));
+  if (ph) {
+    svg.appendChild(mk('text', { x: cx, y: cy - 8, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': '20' }, ph.emoji));
+    svg.appendChild(mk('text', { x: cx, y: cy + 12, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: dark ? '#6080b0' : '#4a5a80', 'font-size': '8', 'font-family': 'Raleway,sans-serif', 'font-weight': '600' }, `${ph.illum}%`));
+  }
+
+  // planets
+  planets.forEach((p, idx) => {
+    if (!p) return;
+    const angle = (180 - p.lon) * DEG;
+    const px = cx + rI * Math.cos(angle), py = cy + rI * Math.sin(angle);
+    const s = signOf(p.lon);
+    const hit = mk('circle', { cx: px, cy: py, r: '13', fill: 'transparent', 'pointer-events': 'all', cursor: 'pointer' });
+    const dot = mk('text', { x: px, y: py, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: PLANET_COL[idx], 'font-size': IS_NODE[idx] ? '18' : '16', 'font-family': 'serif', 'font-weight': 'bold', 'pointer-events': 'none', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.4))' }, PLANET_SYM[idx]);
+    attachTip(hit, dot, svg, px, py, PLANET_SYM[idx], PLANET_COL[idx], pname(idx) + ' · ' + s.name, `${s.deg}°${String(s.min).padStart(2, '0')}'`);
+    svg.appendChild(hit); svg.appendChild(dot);
+  });
+  svg.appendChild(mk('circle', { cx, cy, r: rO, fill: 'none', stroke: dark ? '#2a3d60' : '#8898c0', 'stroke-width': '1.5' }));
+}
+
+// ─── DRAW NATAL WHEEL ─────────────────────────────────────────────
+function drawNatalWheel(planets, houses) {
+  const svg = document.getElementById('natal-wheel');
+  if (!svg) return;
+  svg.innerHTML = '';
+  // houses may be null - we still draw the chart, just without house lines
+
+  const ns = 'http://www.w3.org/2000/svg';
+  const mk = mkSvg(ns);
+  const cx = 260, cy = 260, rO = 244, rB = 208, rI = 172, rH = 138;
+  const dark = !document.body.classList.contains('light');
+  const asc = houses ? houses.asc : 0;
+  const svgA = lon => (180 - (lon - asc)) * DEG;
+
+  // background
+  const defs = mk('defs', {});
+  const gr = mk('radialGradient', { id: 'natbg2', cx: '50%', cy: '50%', r: '50%' });
+  gr.appendChild(mk('stop', { offset: '0%', 'stop-color': dark ? '#0f1828' : '#f0f4ff' }));
+  gr.appendChild(mk('stop', { offset: '100%', 'stop-color': dark ? '#080e1a' : '#e0e8f8' }));
+  defs.appendChild(gr); svg.appendChild(defs);
+  svg.appendChild(mk('circle', { cx, cy, r: rO, fill: 'url(#natbg2)', stroke: dark ? '#1e2d4a' : '#b0bcd8', 'stroke-width': '1.5' }));
+
+  // sign sectors rotated by ASC
+  for (let i = 0; i < 12; i++) {
+    const a1 = svgA(i * 30), a2 = svgA((i + 1) * 30);
+    const x1 = cx + rB * Math.cos(a1), y1 = cy + rB * Math.sin(a1);
+    const x2 = cx + rO * Math.cos(a1), y2 = cy + rO * Math.sin(a1);
+    const x3 = cx + rO * Math.cos(a2), y3 = cy + rO * Math.sin(a2);
+    const x4 = cx + rB * Math.cos(a2), y4 = cy + rB * Math.sin(a2);
+    svg.appendChild(mk('path', { d: `M${x1} ${y1}L${x2} ${y2}A${rO} ${rO} 0 0 0 ${x3} ${y3}L${x4} ${y4}A${rB} ${rB} 0 0 1 ${x1} ${y1}`, fill: SIGN_COL[i] + '22', stroke: dark ? '#1e2d4a' : '#b8c4dc', 'stroke-width': '0.5' }));
+    const ma = svgA(i * 30 + 15), rs = (rB + rO) / 2;
+    svg.appendChild(mk('text', { x: cx + rs * Math.cos(ma), y: cy + rs * Math.sin(ma), 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: SIGN_COL[i], 'font-size': '16', 'font-family': 'serif', 'font-weight': 'bold' }, SIGN_SYM[i]));
+  }
+  svg.appendChild(mk('circle', { cx, cy, r: rB, fill: 'none', stroke: dark ? '#1e2d4a' : '#a8b8d8', 'stroke-width': '1.2' }));
+  svg.appendChild(mk('circle', { cx, cy, r: rI, fill: dark ? '#0b1420' : '#f6f9ff', stroke: dark ? '#182436' : '#b8c8e0', 'stroke-width': '1' }));
+  if (houses) svg.appendChild(mk('circle', { cx, cy, r: rH, fill: 'none', stroke: dark ? '#162030' : '#c8d8f0', 'stroke-width': '0.6', 'stroke-dasharray': '2,4' }));
+
+  // house cusps + numbers (only if houses available)
+  if (houses) {
+    houses.cusps.forEach((cusp, h) => {
+      const angular = [0, 3, 6, 9].includes(h);
+      const a = svgA(cusp);
+      const rInner = angular ? 28 : rH;
+      svg.appendChild(mk('line', { x1: cx + rInner * Math.cos(a), y1: cy + rInner * Math.sin(a), x2: cx + rI * Math.cos(a), y2: cy + rI * Math.sin(a), stroke: angular ? (dark ? '#c8a040' : '#9a7020') : (dark ? '#2a3d60' : '#9ab0cc'), 'stroke-width': angular ? '1.8' : '0.8' }));
+      const next = houses.cusps[(h + 1) % 12];
+      const span = norm(next - cusp);
+      const midA = svgA(cusp + span / 2);
+      const rL = (rH + rI) / 2;
+      svg.appendChild(mk('text', { x: cx + rL * Math.cos(midA), y: cy + rL * Math.sin(midA), 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: dark ? '#4060a0' : '#8090b8', 'font-size': '10', 'font-family': 'Raleway,sans-serif', 'font-weight': '700' }, String(h + 1)));
+    });
+    // angle labels
+    [{ lon: houses.asc, lbl: t('asc') }, { lon: houses.dc, lbl: 'DC' }, { lon: houses.mc, lbl: t('mc') }, { lon: houses.ic, lbl: 'IC' }].forEach(({ lon, lbl }) => {
+      const a = svgA(lon);
+      svg.appendChild(mk('text', { x: cx + (rO - 14) * Math.cos(a), y: cy + (rO - 14) * Math.sin(a), 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: dark ? '#e8c060' : '#9a7020', 'font-size': '9', 'font-weight': '800', 'font-family': 'Raleway,sans-serif' }, lbl));
+    });
+  }
+
+  // ticks
+  for (let i = 0; i < 360; i += 5) {
+    const a = svgA(i), r1 = i % 30 === 0 ? rI - 12 : i % 10 === 0 ? rI - 7 : rI - 4;
+    svg.appendChild(mk('line', { x1: cx + rI * Math.cos(a), y1: cy + rI * Math.sin(a), x2: cx + r1 * Math.cos(a), y2: cy + r1 * Math.sin(a), stroke: dark ? '#1e2d4a' : '#b0bcd8', 'stroke-width': '0.5' }));
+  }
+
+  // aspect lines inside rH
+  const rAsp = houses ? rH - 6 : rI - 4;
+  calcAspects(planets).forEach(({ p1, p2, asp }) => {
+    if (!planets[p1] || !planets[p2]) return;
+    const a1 = svgA(planets[p1].lon), a2 = svgA(planets[p2].lon);
+    const ln = mk('line', { x1: cx + rAsp * Math.cos(a1), y1: cy + rAsp * Math.sin(a1), x2: cx + rAsp * Math.cos(a2), y2: cy + rAsp * Math.sin(a2), stroke: asp.col, 'stroke-width': String(asp.w) });
+    if (asp.dash) ln.setAttribute('stroke-dasharray', asp.dash);
+    svg.appendChild(ln);
+  });
+
+  // moon
+  const ph = moonPhase(planets);
+  svg.appendChild(mk('circle', { cx, cy, r: 28, fill: dark ? '#0b1420' : '#eef4ff', stroke: dark ? '#1e2d4a' : '#c0cce0', 'stroke-width': '1' }));
+  if (ph) {
+    svg.appendChild(mk('text', { x: cx, y: cy - 7, 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': '18' }, ph.emoji));
+    svg.appendChild(mk('text', { x: cx, y: cy + 11, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: dark ? '#6080b0' : '#4a5a80', 'font-size': '8', 'font-family': 'Raleway,sans-serif', 'font-weight': '600' }, `${ph.illum}%`));
+  }
+
+  // planets
+  planets.forEach((p, idx) => {
+    if (!p) return;
+    const angle = svgA(p.lon);
+    const px = cx + rI * Math.cos(angle), py = cy + rI * Math.sin(angle);
+    const s = signOf(p.lon);
+    const hn = houses ? whichHouse(p.lon, houses.cusps) : null;
+    const hit = mk('circle', { cx: px, cy: py, r: '13', fill: 'transparent', 'pointer-events': 'all', cursor: 'pointer' });
+    const dot = mk('text', { x: px, y: py, 'text-anchor': 'middle', 'dominant-baseline': 'central', fill: PLANET_COL[idx], 'font-size': IS_NODE[idx] ? '18' : '16', 'font-family': 'serif', 'font-weight': 'bold', 'pointer-events': 'none', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,.4))' }, PLANET_SYM[idx]);
+    attachTip(hit, dot, svg, px, py, PLANET_SYM[idx], PLANET_COL[idx], pname(idx) + ' · ' + s.name + (hn ? ' · H' + hn : ''), `${s.deg}°${String(s.min).padStart(2, '0')}'`);
+    svg.appendChild(hit); svg.appendChild(dot);
+  });
+  svg.appendChild(mk('circle', { cx, cy, r: rO, fill: 'none', stroke: dark ? '#2a3d60' : '#8898c0', 'stroke-width': '1.5' }));
+}
+
+// ─── PLANET TABLE ─────────────────────────────────────────────────
+function renderTable(planets, tbodyId, houses) {
+  const tb = document.getElementById(tbodyId);
+  if (!tb) return;
+  tb.innerHTML = '';
+  planets.forEach((p, i) => {
+    if (!p) return;
+    const s = signOf(p.lon), ms = String(s.min).padStart(2, '0');
+    const hn = houses ? whichHouse(p.lon, houses.cusps) : null;
+    const tr = document.createElement('tr');
+    tr.className = 'fade-in'; tr.style.animationDelay = (i * 0.04) + 's';
+    tr.innerHTML = `<td class="td-sym"><span style="color:${PLANET_COL[i]}">${PLANET_SYM[i]}</span></td>
+      <td class="td-name">${pname(i)}</td>
+      <td><div class="td-sign"><span style="font-size:15px;color:${s.col}">${s.sym}</span><span class="sign-nm">${s.name}</span></div></td>
+      <td style="font-size:11px;color:var(--gold);font-weight:700">${hn ? 'H' + hn : ''}</td>
+      <td>${p.retro ? '<span class="retro">Rx</span>' : ''}</td>
+      <td style="text-align:right"><span class="deg-pill">${s.deg}°${ms}'</span></td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function renderAspectLegend(planets) {
+  const el = document.getElementById('aspectLegend');
+  if (!el) return;
+  el.innerHTML = '';
+  const seen = new Set();
+  calcAspects(planets).forEach(({ asp }) => {
+    const n = aspName(asp);
+    if (seen.has(n)) return; seen.add(n);
+    const item = document.createElement('div'); item.className = 'asp-item';
+    const line = document.createElement('div'); line.className = 'asp-line';
+    line.style.background = asp.col.replace(/[\d.]+\)/, '1)');
+    if (asp.dash) line.style.backgroundImage = `repeating-linear-gradient(90deg,${line.style.background} 0,${line.style.background} 4px,transparent 4px,transparent 7px)`;
+    item.appendChild(line); item.appendChild(document.createTextNode(n));
+    el.appendChild(item);
+  });
+}
+
+// ─── STATE & RENDER ───────────────────────────────────────────────
+let currentDate = new Date(), isLive = true, isAnimating = false, animSpeed = 7, animFrame = null, lastTs = null;
+
+function render(d) {
+  const iso = d.toISOString();
+  const locale = lang === 'pl' ? 'pl-PL' : 'en-GB';
+  document.getElementById('currentDate').textContent =
+    d.toLocaleDateString(locale, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC' }) + ' UTC';
+  document.getElementById('modeBadge').style.display = isLive ? 'none' : 'inline-block';
+  document.getElementById('liveDot').classList.toggle('paused', !isLive);
+  document.getElementById('liveLabel').textContent = isLive ? t('live') : t('historical');
+  document.getElementById('datePicker').value = iso.slice(0, 10);
+  document.getElementById('timePicker').value = iso.slice(11, 16);
+  const planets = calcPlanets(d);
+  renderTable(planets, 'sky-tbody', null);
+  drawSkyWheel(planets);
+  const ph = moonPhase(planets);
+  if (ph) {
+    document.getElementById('moonEmoji').textContent = ph.emoji;
+    document.getElementById('moonName').textContent = ph.name;
+    document.getElementById('moonPct').textContent = ph.illum + '%';
+    document.getElementById('moonFill').style.width = ph.illum + '%';
+  }
+  renderAspectLegend(planets);
+}
+
+function stepDate(d, n, u) {
+  const MS = { hour: 3600000, day: 86400000, week: 604800000 };
+  if (u === 'month') { const nd = new Date(d); nd.setUTCMonth(nd.getUTCMonth() + n); return nd; }
+  return new Date(d.getTime() + n * (MS[u] || MS.day));
+}
+function goTo(d) { currentDate = d; isLive = false; render(d); }
+function goLive() { currentDate = new Date(); isLive = true; stopAnim(); render(currentDate); }
+
+function startAnim() {
+  if (isAnimating) return;
+  isAnimating = true; isLive = false; lastTs = null;
+  document.getElementById('animBtn').textContent = t('pause');
+  document.getElementById('animBtn').classList.add('active');
+  (function tick(ts) {
+    if (!lastTs) lastTs = ts;
+    currentDate = new Date(currentDate.getTime() + animSpeed * 86400000 * (ts - lastTs) / 1000);
+    lastTs = ts; render(currentDate); animFrame = requestAnimationFrame(tick);
+  })(performance.now());
+}
+function stopAnim() {
+  isAnimating = false;
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  document.getElementById('animBtn').textContent = t('play');
+  document.getElementById('animBtn').classList.remove('active');
+}
+
+document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => { stopAnim(); goTo(stepDate(currentDate, +b.dataset.step, b.dataset.unit)); }));
+document.getElementById('jumpBtn').addEventListener('click', () => { stopAnim(); const dp = document.getElementById('datePicker').value, tp = document.getElementById('timePicker').value || '12:00'; if (dp) goTo(new Date(dp + 'T' + tp + ':00Z')); });
+document.getElementById('nowBtn').addEventListener('click', goLive);
+document.getElementById('animBtn').addEventListener('click', () => isAnimating ? stopAnim() : startAnim());
+document.querySelectorAll('[data-animspeed]').forEach(b => b.addEventListener('click', () => {
+  animSpeed = +b.dataset.animspeed;
+  document.querySelectorAll('[data-animspeed]').forEach(x => x.classList.remove('active')); b.classList.add('active');
+  if (isAnimating) { stopAnim(); startAnim(); }
+}));
+setInterval(() => { if (isLive && !isAnimating) { currentDate = new Date(); render(currentDate); } }, 60000);
+
+// ─── PROFILES ─────────────────────────────────────────────────────
+let profiles = JSON.parse(localStorage.getItem('wrozai_profiles') || localStorage.getItem('celestia_profiles') || '[]');
+let editId = null, selectedProfileId = null;
+function saveProfiles() { localStorage.setItem('wrozai_profiles', JSON.stringify(profiles)); }
+
+window.openAddProfile = function() {
+  editId = null;
+  document.getElementById('modalTitle').textContent = '✦ ' + t('addProfile');
+  ['pName', 'pDate', 'pPlace'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('pTime').value = '12:00';
+  document.getElementById('profileModal').classList.add('open');
+};
+window.closeModal = function() { document.getElementById('profileModal').classList.remove('open'); };
+
+document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+  const name = document.getElementById('pName').value.trim();
+  const date = document.getElementById('pDate').value;
+  const time = document.getElementById('pTime').value || '12:00';
+  const place = document.getElementById('pPlace').value.trim();
+  if (!name || !date) { alert(t('needNameDate')); return; }
+  const bd = new Date(date + 'T' + time + ':00Z');
+  let geo = null;
+  if (place) geo = await geocode(place);
+  const prof = { id: editId || Date.now().toString(), name, date: bd.toISOString(), place, lat: geo?.lat || null, lon: geo?.lon || null, geoName: geo?.name || place || null };
+  if (editId) { const i = profiles.findIndex(p => p.id === editId); if (i >= 0) profiles[i] = prof; }
+  else profiles.push(prof);
+  saveProfiles(); closeModal(); renderProfiles(); refreshTransitSel();
+});
+
+function renderProfiles() {
+  const el = document.getElementById('profilesList');
+  if (!el) return;
+  if (!profiles.length) {
+    el.innerHTML = `<div class="empty-state"><div class="es-icon">♦</div><p>${t('noProfiles').replace('\n', '<br>')}</p></div>`;
+    document.getElementById('natalSection').style.display = 'none'; return;
+  }
+  el.innerHTML = '';
+  profiles.forEach(p => {
+    const bd = new Date(p.date), pl = calcPlanets(bd);
+    const sun = pl[0] ? signOf(pl[0].lon) : null, moon = pl[1] ? signOf(pl[1].lon) : null;
+    const div = document.createElement('div');
+    div.className = 'profile-card fade-in' + (selectedProfileId === p.id ? ' selected' : '');
+    div.innerHTML = `<div class="profile-avatar">${p.name[0].toUpperCase()}</div>
+      <div class="profile-info">
+        <div class="profile-name">${p.name}</div>
+        <div class="profile-birth">${bd.toLocaleDateString(lang === 'pl' ? 'pl-PL' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}${p.place ? ' · ' + p.place : ''}</div>
+        ${sun ? `<div class="profile-sun">${PLANET_SYM[0]} ${sun.name} · ${PLANET_SYM[1]} ${moon?.name || '—'}</div>` : ''}
+        ${p.lat ? `<div style="font-size:10px;color:var(--teal);margin-top:2px">📍 ${p.lat.toFixed(2)}°, ${p.lon.toFixed(2)}°</div>` : ''}
+      </div>
+      <div class="profile-actions">
+        <button class="btn sm gold" onclick="showNatalChart('${p.id}')">${t('kosmogram')}</button>
+        <button class="btn sm" onclick="editProfile('${p.id}')">✎</button>
+        <button class="btn sm danger" onclick="deleteProfile('${p.id}')">✕</button>
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+window.showNatalChart = async function(id) {
+  const p = profiles.find(x => x.id === id); if (!p) return;
+  selectedProfileId = id; renderProfiles();
+  const bd = new Date(p.date), planets = calcPlanets(bd);
+  let houses = null;
+  console.log('showNatalChart:', p.name, 'lat:', p.lat, 'lon:', p.lon, 'swe:', !!swe);
+  if (p.lat && p.lon && swe) {
+    houses = calcHouses(julday(bd), p.lat, p.lon);
+    console.log('houses result:', houses);
+  }
+  document.getElementById('natalSection').style.display = 'block';
+  document.getElementById('natalTitle').textContent = p.name + ' · ' + t('kosmogram');
+  const info = document.getElementById('natalHouseInfo');
+  if (houses) {
+    const as = signOf(houses.asc), ms = signOf(houses.mc);
+    info.innerHTML = `<span style="color:var(--gold);font-weight:700">${t('asc')} ${as.sym} ${as.name} ${as.deg}°${String(as.min).padStart(2, '0')}'</span>
+      <span style="color:var(--teal);font-weight:700;margin-left:12px">${t('mc')} ${ms.sym} ${ms.name} ${ms.deg}°${String(ms.min).padStart(2, '0')}'</span>
+      <span style="color:var(--muted);margin-left:12px">${houses.sys==='P'?'Placidus':houses.sys==='O'?'Porphyry':houses.sys==='W'?'Whole Sign':'Houses'} · ${p.geoName?.split(',')[0] || p.place || ''}</span>`;
+  } else {
+    info.innerHTML = `<span style="color:var(--muted);font-style:italic">${t('geocodeErr')}</span>`;
+  }
+  const angDiv = document.getElementById('natalAngles'); angDiv.innerHTML = '';
+  if (houses) {
+    [{ lon: houses.asc, lbl: t('asc') }, { lon: houses.mc, lbl: t('mc') }].forEach(({ lon, lbl }) => {
+      const s = signOf(lon);
+      const pill = document.createElement('span'); pill.className = 'deg-pill'; pill.style.marginRight = '6px';
+      pill.innerHTML = `${lbl}: <span style="color:${s.col}">${s.sym}</span> ${s.name} ${s.deg}°${String(s.min).padStart(2, '0')}'`;
+      angDiv.appendChild(pill);
+    });
+  }
+  drawNatalWheel(planets, houses);
+  renderTable(planets, 'natal-tbody', houses);
+  document.getElementById('natalSection').scrollIntoView({ behavior: 'smooth' });
+};
+
+window.editProfile = function(id) {
+  const p = profiles.find(x => x.id === id); if (!p) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = '✦ ' + t('editProfile');
+  document.getElementById('pName').value = p.name;
+  const bd = new Date(p.date);
+  document.getElementById('pDate').value = bd.toISOString().slice(0, 10);
+  document.getElementById('pTime').value = bd.toISOString().slice(11, 16);
+  document.getElementById('pPlace').value = p.place || '';
+  document.getElementById('profileModal').classList.add('open');
+};
+
+window.deleteProfile = function(id) {
+  if (!confirm(t('delConfirm'))) return;
+  profiles = profiles.filter(p => p.id !== id); saveProfiles();
+  if (selectedProfileId === id) { selectedProfileId = null; document.getElementById('natalSection').style.display = 'none'; }
+  renderProfiles(); refreshTransitSel();
+};
+
+function refreshTransitSel() {
+  const sel = document.getElementById('transitProfileSelect');
+  const prev = sel.value;
+  sel.innerHTML = `<option value="">${t('tSelectOpt')}</option>`;
+  profiles.forEach(p => sel.add(new Option(p.name, p.id)));
+  if (profiles.find(p => p.id === prev)) sel.value = prev;
+}
+
+// ─── TRANSITS ─────────────────────────────────────────────────────
+function getOrb(asp) { return asp.major ? +(document.getElementById('orbMajor').value || 3) : +(document.getElementById('orbMinor').value || 1); }
+
+function calcTransits(natalLons, days) {
+  const out = [], now = new Date(), step = 24, steps = Math.ceil(days * 24 / step);
+  for (let s = 0; s <= steps; s++) {
+    const d = new Date(now.getTime() + s * step * 3600000);
+    const sky = calcPlanets(d);
+    for (let ti = 0; ti < 10; ti++) {
+      const tl = sky[ti]?.lon; if (tl == null) continue;
+      for (let ni = 0; ni < 10; ni++) {
+        const nl = natalLons[ni]; if (nl == null) continue;
+        for (const asp of ASPECTS) {
+          const orb = getOrb(asp);
+          let diff = Math.abs(tl - nl); if (diff > 180) diff = 360 - diff;
+          const sep = Math.abs(diff - asp.angle);
+          if (sep <= orb) {
+            const key = `${ti}-${ni}-${asp.key}`;
+            if (!out.find(x => x.key === key && Math.abs(x.date - d) < 7 * 86400000)) {
+              out.push({ key, date: d, ti, ni, asp, tName: pname(ti), tSym: PLANET_SYM[ti], tCol: PLANET_COL[ti], nName: pname(ni), nSym: PLANET_SYM[ni], nCol: PLANET_COL[ni] });
+            }
+            break;
+          }
+        }
+      }
+    }
+  }
+  const seen = new Set();
+  return out.sort((a, b) => a.date - b.date).filter(x => { if (seen.has(x.key)) return false; seen.add(x.key); return true; });
+}
+
+document.getElementById('calcTransitsBtn').addEventListener('click', () => {
+  const pid = document.getElementById('transitProfileSelect').value;
+  if (!pid) { alert(t('needSelect')); return; }
+  const p = profiles.find(x => x.id === pid); if (!p) return;
+  const days = +document.getElementById('transitDays').value;
+  const natalLons = calcPlanets(new Date(p.date)).map(x => x?.lon ?? null);
+  const btn = document.getElementById('calcTransitsBtn');
+  btn.textContent = t('calculating'); btn.disabled = true;
+  setTimeout(() => { renderTransits(calcTransits(natalLons, days), p.name); btn.textContent = t('calcTransits'); btn.disabled = false; }, 50);
+});
+
+function renderTransits(list, name) {
+  const el = document.getElementById('transitResults'); if (!el) return;
+  if (!list.length) { el.innerHTML = `<div class="empty-state"><div class="es-icon">✦</div><p>${t('transitEmpty')}</p></div>`; return; }
+  const now = new Date(), locale = lang === 'pl' ? 'pl-PL' : 'en-GB';
+  el.innerHTML = `<div style="font-size:11px;color:var(--muted);padding:4px 0 10px">${list.length} ${t('foundFor')} <strong style="color:var(--accent)">${name}</strong></div>`;
+  const card = document.createElement('div'); card.className = 'card'; card.style.overflow = 'hidden';
+  list.forEach(item => {
+    const da = Math.round((item.date - now) / 86400000);
+    const ds = item.date.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+    const dl = da === 0 ? t('today') : da < 0 ? `${Math.abs(da)} ${t('dAgo')}` : `${da}d`;
+    const div = document.createElement('div'); div.className = 'transit-item fade-in';
+    div.innerHTML = `<div class="transit-icon ${item.asp.cls}">${item.asp.sym}</div>
+      <div class="transit-meta">
+        <div class="transit-planets"><span style="color:${item.tCol}">${item.tSym} ${item.tName}</span> <span style="color:var(--muted)">${item.asp.sym}</span> <span style="color:${item.nCol}">natal ${item.nSym} ${item.nName}</span></div>
+        <div class="transit-aspect">${aspName(item.asp)}</div>
+        <div class="transit-date">📅 ${ds}</div>
+      </div><div class="transit-orb">${dl}</div>`;
+    card.appendChild(div);
+  });
+  el.appendChild(card);
+}
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────
+let notifEnabled = false;
+window.toggleNotifications = async function() {
+  if (!('Notification' in window)) { document.getElementById('notifStatus').textContent = t('notifNo'); return; }
+  if (!notifEnabled) {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      notifEnabled = true; document.getElementById('notifToggle').classList.add('on');
+      document.getElementById('notifStatus').textContent = t('notifOn');
+      document.getElementById('notifStatus').style.color = 'var(--green)';
+    } else {
+      document.getElementById('notifStatus').textContent = t('notifDenied');
+      document.getElementById('notifStatus').style.color = 'var(--red)';
+    }
+  } else {
+    notifEnabled = false; document.getElementById('notifToggle').classList.remove('on');
+    document.getElementById('notifStatus').textContent = t('notifOff');
+    document.getElementById('notifStatus').style.color = 'var(--muted)';
+  }
+};
+
+window.scheduleNotifications = function() {
+  if (!notifEnabled) { alert(t('needNotif')); return; }
+  const p = profiles[0]; if (!p) { alert(t('needProfile')); return; }
+  const natalLons = calcPlanets(new Date(p.date)).map(x => x?.lon ?? null);
+  const alertDays = +(document.querySelector('#alertTiming .btn.active')?.dataset.days || 1);
+  const activeAsps = new Set([...document.querySelectorAll('#alertAspects .btn.active')].map(b => b.dataset.asp));
+  let n = 0;
+  calcTransits(natalLons, 7).filter(x => activeAsps.has(x.asp.key)).forEach(x => {
+    const delay = x.date - alertDays * 86400000 - Date.now();
+    if (delay > 0 && delay < 7 * 86400000) {
+      setTimeout(() => new Notification(`⭐ WróżAI · ${p.name}`, { body: `${x.tName} ${aspName(x.asp)} natal ${x.nName}`, icon: 'icon-192.png', tag: `t-${x.key}` }), delay);
+      n++;
+    }
+  });
+  const btn = document.getElementById('scheduleNotifBtn');
+  btn.textContent = `✓ ${n}`; setTimeout(() => btn.textContent = t('scheduleNotif'), 3000);
+};
+
+document.getElementById('alertTiming').querySelectorAll('[data-days]').forEach(b => b.addEventListener('click', () => {
+  document.getElementById('alertTiming').querySelectorAll('[data-days]').forEach(x => x.classList.remove('active')); b.classList.add('active');
+}));
+document.getElementById('alertAspects').querySelectorAll('[data-asp]').forEach(b => b.addEventListener('click', () => b.classList.toggle('active')));
+
+// ─── THEME ────────────────────────────────────────────────────────
+let isLight = false;
+window.toggleTheme = function() {
+  isLight = !isLight; document.body.classList.toggle('light', isLight);
+  document.getElementById('themeToggle').classList.toggle('on', isLight);
+  localStorage.setItem('wrozai_theme', isLight ? 'light' : 'dark');
+  render(currentDate);
+  if (selectedProfileId) showNatalChart(selectedProfileId);
+};
+
+// ─── NAVIGATION ───────────────────────────────────────────────────
+window.switchScreen = function(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelector(`[data-screen="${name}"]`).classList.add('active');
+};
+
+// ─── INSTALL ──────────────────────────────────────────────────────
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; document.getElementById('installBanner').style.display = 'flex'; });
+
+// ─── SERVICE WORKER ───────────────────────────────────────────────
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+// ─── BOOTSTRAP ────────────────────────────────────────────────────
+async function bootstrap() {
+  // restore theme
+  if ((localStorage.getItem('wrozai_theme') || localStorage.getItem('celestia_theme')) === 'light') {
+    isLight = true; document.body.classList.add('light'); document.getElementById('themeToggle').classList.add('on');
+  }
+  // restore house system
+  const sh = localStorage.getItem('wrozai_houses');
+  if (sh) {
+    houseSystem = sh;
+    document.getElementById('housePorphyry').classList.toggle('active', sh === 'O');
+    document.getElementById('housePlacidus').classList.toggle('active', sh === 'P');
+  }
+  // restore language
+  const sl = localStorage.getItem('wrozai_lang');
+  if (sl === 'pl') { lang = 'pl'; document.getElementById('langPL').classList.add('active'); document.getElementById('langEN').classList.remove('active'); }
+  applyLang();
+
+  document.getElementById('loadingMsg').style.display = 'flex';
+  try {
+    await initSwe();
+    document.getElementById('loadingMsg').style.display = 'none';
+  } catch(e) {
+    document.getElementById('loadingMsg').innerHTML = `<div style="color:#e05555;font-size:13px;text-align:center;padding:20px">⚠ Swiss Ephemeris failed to load<br><small>${e.message}</small></div>`;
+    return;
+  }
+  render(currentDate);
+  renderProfiles();
+  refreshTransitSel();
+  setTimeout(() => {
+    const standalone = window.matchMedia('(display-mode:standalone)').matches || navigator.standalone;
+    if (!standalone && !deferredInstall) document.getElementById('installBanner').style.display = 'flex';
+  }, 3000);
+}
+
+bootstrap();
+</script>
+</body>
+</html>
