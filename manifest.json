@@ -1,0 +1,42 @@
+{
+  "name": "Celestia · Astrological Clock",
+  "short_name": "Celestia",
+  "description": "Live planetary positions, natal charts & personal transit tracker powered by Swiss Ephemeris",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d1120",
+  "theme_color": "#0d1120",
+  "orientation": "any",
+  "categories": ["lifestyle", "utilities"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Sky Now",
+      "short_name": "Sky",
+      "description": "View current planetary positions",
+      "url": "./index.html#sky",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    },
+    {
+      "name": "My Transits",
+      "short_name": "Transits",
+      "description": "View upcoming personal transits",
+      "url": "./index.html#transits",
+      "icons": [{"src": "icon-192.png", "sizes": "192x192"}]
+    }
+  ]
+}
